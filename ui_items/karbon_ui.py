@@ -4,6 +4,7 @@ import threading
 import json
 import os
 import re
+import time
 from pathlib import Path
 
 from ui_items.prompt_view import PromptView
@@ -25,8 +26,11 @@ EXAMPLES = {
 
 
 class KarbonUI:
-    def __init__(self, root):
+    def __init__(self, root, active_user=None):
         self.root = root
+        self.active_user = active_user
+        print("KarbonUI started for:", self.active_user)
+
         self.setup_window()
         self.setup_styles()
         self.code = ""
@@ -39,6 +43,13 @@ class KarbonUI:
         self.main_container.pack(fill="both", expand=True)
 
         self.create_title_bar()
+
+        # ✅✅ Add menubar and User menu
+        self.menu_bar = tk.Menu(self.root)
+        user_menu = tk.Menu(self.menu_bar, tearoff=0)
+        user_menu.add_command(label="Switch User", command=self.switch_user)
+        self.menu_bar.add_cascade(label="User", menu=user_menu)
+        self.root.config(menu=self.menu_bar)
 
         self.paned_window = ttk.PanedWindow(self.main_container, orient=tk.HORIZONTAL)
         self.paned_window.pack(fill="both", expand=True, padx=20, pady=(0, 20))
@@ -58,7 +69,7 @@ class KarbonUI:
             get_model_source_callback=self.get_model_source
         )
 
-        # View History Button
+    # View History Button
         self.history_button = tk.Button(
               self.main_container, text="View History", command=self.show_history_panel)
         self.history_button.pack(pady=(0, 10))
@@ -107,6 +118,11 @@ class KarbonUI:
         self.animate_title()
         self.update_ai_status_indicator()
         self.apply_user_appearance()
+         # ✅✅ Add this method to support "Switch User"
+    def switch_user(self):
+        messagebox.showinfo("Switch User", "User switching functionality will be implemented here.")
+
+
     def show_history_panel(self):
         if not self.history:
             messagebox.showinfo("History", "No history available.")
@@ -117,12 +133,54 @@ class KarbonUI:
         history_window.geometry("600x400")
         history_window.configure(bg="#0d1117")
 
-        listbox = tk.Listbox(history_window, bg="#161b22", fg="white", font=("Segoe UI", 10))
+        listbox = tk.Listbox(
+            history_window,
+            bg="#161b22",
+            fg="white",
+            font=("Segoe UI", 10),
+            selectbackground="#238636",
+        selectforeground="white"
+        )
         listbox.pack(fill="both", expand=True, padx=10, pady=10)
 
         for i, (prompt, code) in enumerate(self.history):
-            entry = f"{i+1}. Prompt: {prompt[:60]}..."
+            entry = f"{i+1}. Prompt: {prompt[:60]}..." if len(prompt) > 60 else f"{i+1}. Prompt: {prompt}"
             listbox.insert(tk.END, entry)
+
+        def show_selected():
+            selected = listbox.curselection()
+            if not selected:
+                messagebox.showinfo("No selection", "Please select an entry to view.")
+                return
+
+            index = selected[0]
+            prompt, code = self.history[index]
+
+            detail_window = tk.Toplevel(history_window)
+            detail_window.title(f"Prompt {index + 1} Details")
+            detail_window.geometry("600x400")
+            detail_window.configure(bg="#0d1117")
+
+            text_widget = tk.Text(
+                detail_window,
+                wrap="word",
+                bg="#161b22",
+                fg="white",
+                font=("Segoe UI", 10)
+            )
+            text_widget.insert(tk.END, f"Prompt:\n{prompt}\n\nOutput:\n{code}")
+            text_widget.config(state=tk.DISABLED)
+            text_widget.pack(fill="both", expand=True, padx=10, pady=10)
+
+        tk.Button(
+            history_window,
+            text="View Selected",
+            command=show_selected,
+            bg="#238636",
+            fg="white",
+            font=("Segoe UI", 10)
+        ).pack(pady=5)
+
 
         def show_selected():
             idx = listbox.curselection()

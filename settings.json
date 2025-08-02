@@ -4,7 +4,7 @@
     "layout": {
         "prompt_view_visible": true,
         "editor_view_visible": false,
-        "sash_position": 600
+        "sash_position": null
     },
     "font_family": "Verdana",
     "font_size": 12,

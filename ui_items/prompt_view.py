@@ -6,6 +6,8 @@ from utils.preview import update_preview
 import core.prompt_history as prompt_history
 from core.ai_engine import ai_status
 from core.ai_engine import optimize_prompt
+from user_manager import UserManager
+
 
 MAX_PROMPT_LENGTH = 256
 
