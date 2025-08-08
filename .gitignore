@@ -43,3 +43,5 @@ test_token_ui.py
 coverage.xml
 pytest-report.xml
 .pytest_cache/
+
+config.json
